@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediKiosk - Digital Patient Case Taking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-heart-pulse logo-icon"></i>
+            <span>MediKiosk <small>SIH 2026</small></span>
+        </div>
+        <div class="nav-actions">
+            <button class="btn-toggle-view" id="viewToggleBtn" onclick="toggleView()">
+                <i class="fa-solid fa-user-doctor"></i> Switch to Doctor Dashboard
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- SECTION 1: PATIENT KIOSK INTERFACE -->
+        <main id="patientKiosk" class="view-section active">
+            
+            <div class="stepper">
+                <div class="step active" id="step1-indicator">1. Registration</div>
+                <div class="step" id="step2-indicator">2. Symptoms & Intake</div>
+                <div class="step" id="step3-indicator">3. Upload Reports</div>
+            </div>
+
+            <!-- Step 1: ABHA Login & Basic Info -->
+            <div class="card-step active-card" id="step1Card">
+                <h2><i class="fa-solid fa-id-card"></i> Patient Registration (ABHA Login)</h2>
+                <div class="form-group">
+                    <label>Enter ABHA ID / Scan QR</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="abhaId" placeholder="e.g. 12-3456-7890-1234">
+                        <button class="btn-sec"><i class="fa-solid fa-qrcode"></i> Scan QR</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Preferred Language (Bhashini AI)</label>
+                    <select id="langSelect">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="bh">Bhojpuri</option>
+                    </select>
+                </div>
+                <button class="btn-primary" onclick="goToStep(2)">Next: Symptom Intake <i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <!-- Step 2: Dual Intake Framework (SOCRATES + Dashavidha) -->
+            <div class="card-step" id="step2Card">
+                <h2><i class="fa-solid fa-notes-medical"></i> Case Taking (Dual Intake)</h2>
+                
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('socratesTab')">Allopathic (SOCRATES)</button>
+                    <button class="tab-btn" onclick="switchTab('dashavidhaTab')">AYUSH (Dashavidha)</button>
+                </div>
+
+                <!-- SOCRATES Intake -->
+                <div id="socratesTab" class="tab-content active">
+                    <div class="form-group">
+                        <label>Site & Onset (Kahan aur kab se dard/takleef hai?):</label>
+                        <textarea id="socratesInput" placeholder="Click voice icon or type..."></textarea>
+                    </div>
+                    <!-- Voice Mic Button -->
+                    <button class="btn-mic" id="micBtn" onclick="toggleSpeech()">
+                        <i class="fa-solid fa-microphone"></i> Speak Answer (Bhashini Speech-to-Text)
+                    </button>
+                </div>
+
+                <!-- Dashavidha Intake -->
+                <div id="dashavidhaTab" class="tab-content">
+                    <div class="form-group">
+                        <label>Prakriti & Agni Assessment:</label>
+                        <select id="ayushPrakriti">
+                            <option>Vata Pradhan</option>
+                            <option>Pitta Pradhan</option>
+                            <option>Kapha Pradhan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-sec" onclick="goToStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button class="btn-primary" onclick="goToStep(3)">Next: Document OCR <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Step 3: OCR Document Processing -->
+            <div class="card-step" id="step3Card">
+                <h2><i class="fa-solid fa-file-prescription"></i> Scan Prescriptions / Lab Reports</h2>
+                <div class="upload-area" onclick="triggerFileUpload()">
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <p>Click or Drag Prescription Image to Scan (OCR Engine)</p>
+                    <input type="file" id="fileInput" hidden accept="image/*" onchange="handleOCRScan(event)">
+                </div>
+                <div id="ocrStatus" class="ocr-output"></div>
+
+                <div class="btn-group">
+                    <button class="btn-sec" onclick="goToStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button class="btn-success" onclick="submitKioskData()"><i class="fa-solid fa-check-circle"></i> Generate Doctor Summary</button>
+                </div>
+            </div>
+
+        </main>
+
+
+        <!-- SECTION 2: DOCTOR DASHBOARD -->
+        <main id="doctorDashboard" class="view-section">
+            <div class="dashboard-grid">
+                
+                <!-- Left Column: Patient Alert & Data -->
+                <div class="doc-card">
+                    <div class="alert-banner warning" id="redFlagBanner">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span><strong>Red Flag Alert:</strong> High Blood Pressure / Severe Chest Pain Detected!</span>
+                    </div>
+
+                    <h3><i class="fa-solid fa-user-check"></i> Patient Overview</h3>
+                    <p><strong>ABHA ID:</strong> 91-8823-1092-22</p>
+                    <p><strong>Name:</strong> Rajesh Kumar | Age: 42 | Gender: Male</p>
+                    <hr>
+                    
+                    <h3><i class="fa-solid fa-brain"></i> LLM Structured Summary</h3>
+                    <div class="summary-box">
+                        <p><strong>Primary Complaint:</strong> Acute chest discomfort radiating to left arm for 2 hours (SOCRATES Framework).</p>
+                        <p><strong>AYUSH Prakriti:</strong> Pitta-Vata dominant.</p>
+                        <p><strong>OCR Extracted Record:</strong> Pre-existing Hypertension. Taking Amlodipine 5mg.</p>
+                    </div>
+                </div>
+
+                <!-- Right Column: Doctor Actions & Prescribe -->
+                <div class="doc-card">
+                    <h3><i class="fa-solid fa-stethoscope"></i> Clinical Verification & Push to ABDM</h3>
+                    <div class="form-group">
+                        <label>Doctor's Remarks / Verification</label>
+                        <textarea rows="4" placeholder="Enter clinical notes..."></textarea>
+                    </div>
+                    <button class="btn-primary" onclick="pushToABDM()"><i class="fa-solid fa-network-wired"></i> Push Summary to HIS / ABDM (FHIR)</button>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
