@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediKiosk - Digital Patient Case Taking System</title>
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <!-- Camera QR Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+
+    <!-- TOP NAVIGATION NAVBAR WITH ASHOKA STAMBHA & MINISTRY OF AYUSH -->
+    <header class="navbar">
+        <div class="brand-container">
+            <!-- Ashoka Stambha National Emblem Image -->
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" alt="Ashoka Stambha Emblem" class="national-emblem">
+            <div class="brand-text">
+                <span class="ministry-title">MINISTRY OF AYUSH</span>
+                <span class="kiosk-title"><i class="fa-solid fa-heart-pulse logo-icon"></i> MediKiosk <small>SIH 2026</small></span>
+            </div>
+        </div>
+        <div class="nav-actions">
+            <!-- Restricted Access Switch Button -->
+            <button class="btn-toggle-view" id="viewToggleBtn" onclick="requestDoctorAccess()">
+                <i class="fa-solid fa-user-lock"></i> Switch to Doctor Dashboard
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- ==================== SECTION 1: PATIENT KIOSK INTERFACE ==================== -->
+        <main id="patientKiosk" class="view-section active">
+            
+            <!-- Progress Stepper Bar -->
+            <div class="stepper">
+                <div class="step active" id="step1-indicator">1. Registration & Consent</div>
+                <div class="step" id="step2-indicator">2. Symptoms & Intake</div>
+                <div class="step" id="step3-indicator">3. Upload Reports</div>
+            </div>
+
+            <!-- STEP 1: ABHA Registration & DPDP Act 2023 Consent -->
+            <div class="card-step active-card" id="step1Card">
+                <h2><i class="fa-solid fa-id-card"></i> Patient Registration (ABHA Login)</h2>
+                
+                <div class="form-group">
+                    <label>Enter ABHA ID / Scan QR</label>
+                    <div class="input-with-btn">
+                        <input type="text" id="abhaId" placeholder="e.g. 12-3456-7890-1234">
+                        <button class="btn-sec" onclick="openQRScanner()"><i class="fa-solid fa-qrcode"></i> Scan QR</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Preferred Language (Bhashini AI)</label>
+                    <select id="langSelect">
+                        <option value="en">English</option>
+                        <option value="hi">हिन्दी (Hindi)</option>
+                        <option value="bh">Bhojpuri</option>
+                    </select>
+                </div>
+
+                <!-- DPDP Act 2023 Digital Consent Box -->
+                <div class="consent-box">
+                    <div class="consent-header">
+                        <i class="fa-solid fa-shield-halved"></i> <strong>DPDP Act 2023 Data Privacy Consent</strong>
+                    </div>
+                    <p class="consent-text">
+                        Under the Digital Personal Data Protection (DPDP) Act 2023, I hereby give my explicit consent to process my health data and medical records through ABDM for clinical diagnosis and consultation purposes.
+                    </p>
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="dpdpConsent" onchange="toggleConsent()">
+                        <span class="checkmark"></span>
+                        <strong>I Accept all Terms, Conditions & Privacy Policy</strong>
+                    </label>
+                </div>
+
+                <button class="btn-primary" id="step1NextBtn" onclick="goToStep(2)" disabled>
+                    Next: Symptom Intake <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- STEP 2: Dual Intake Framework (SOCRATES + Dashavidha) -->
+            <div class="card-step" id="step2Card">
+                <h2><i class="fa-solid fa-notes-medical"></i> Case Taking (Dual Intake)</h2>
+                
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('socratesTab')">Allopathic (SOCRATES)</button>
+                    <button class="tab-btn" onclick="switchTab('dashavidhaTab')">AYUSH (Dashavidha)</button>
+                </div>
+
+                <!-- Allopathic Intake -->
+                <div id="socratesTab" class="tab-content active">
+                    <div class="form-group">
+                        <label>Site & Onset (Kahan aur kab se dard/takleef hai?):</label>
+                        <textarea id="socratesInput" placeholder="Click voice icon or type..."></textarea>
+                    </div>
+                    <button class="btn-mic" id="micBtn" onclick="toggleSpeech()">
+                        <i class="fa-solid fa-microphone"></i> Speak Answer (Bhashini Speech-to-Text)
+                    </button>
+                </div>
+
+                <!-- AYUSH Dashavidha Intake -->
+                <div id="dashavidhaTab" class="tab-content">
+                    <div class="form-group">
+                        <label>Prakriti & Agni Assessment:</label>
+                        <select id="ayushPrakriti">
+                            <option>Vata Pradhan</option>
+                            <option>Pitta Pradhan</option>
+                            <option>Kapha Pradhan</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-sec" onclick="goToStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button class="btn-primary" onclick="goToStep(3)">Next: Document OCR & Upload <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- STEP 3: OCR Engine & Report Upload -->
+            <div class="card-step" id="step3Card">
+                <h2><i class="fa-solid fa-file-prescription"></i> Scan Prescriptions & Previous Lab Reports</h2>
+                
+                <div class="upload-area" onclick="triggerFileUpload()">
+                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                    <p>Click or Drag Previous Prescription / Blood Test Reports (OCR Engine)</p>
+                    <input type="file" id="fileInput" hidden accept="image/*,.pdf" onchange="handleOCRScan(event)">
+                </div>
+
+                <div id="ocrStatus" class="ocr-output"></div>
+
+                <!-- Previous Uploaded Files List -->
+                <div class="previous-reports-box">
+                    <h3><i class="fa-solid fa-folder-open"></i> Uploaded Previous Reports History</h3>
+                    <ul class="report-list" id="uploadedReportsList">
+                        <li>
+                            <span><i class="fa-solid fa-file-pdf"></i> CBC_Blood_Report_Oct2025.pdf</span>
+                            <span class="report-date">Uploaded via ABDM</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-sec" onclick="goToStep(2)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                    <button class="btn-success" onclick="submitKioskData()"><i class="fa-solid fa-check-circle"></i> Complete & Submit Case</button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- ==================== SECTION 2: DOCTOR DASHBOARD (RESTRICTED) ==================== -->
+        <main id="doctorDashboard" class="view-section">
+            
+            <div class="dashboard-header">
+                <h2><i class="fa-solid fa-user-doctor"></i> OPD Doctor Clinical Summary Panel</h2>
+                
+                <!-- Male & Female Doctors Interactive Clickable Avatars -->
+                <div class="doctor-profiles">
+                    <div class="doc-avatar" onclick="openDoctorProfile('sharma')" title="Click to view Dr. Sharma Profile">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3774/3774299.png" alt="Male Doctor Avatar">
+                        <span>Dr. Sharma (M)</span>
+                    </div>
+                    <div class="doc-avatar" onclick="openDoctorProfile('priyanka')" title="Click to view Dr. Priyanka Profile">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3774/3774320.png" alt="Female Doctor Avatar">
+                        <span>Dr. Priyanka (F)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Red Flag Alert Banner -->
+            <div class="alert-banner warning" id="redFlagBanner">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <span><strong>RED FLAG ALERT:</strong> High Blood Pressure (160/100 mmHg) & Severe Chest Pain detected. Priority OPD Consultation Recommended!</span>
+            </div>
+
+            <div class="dashboard-grid">
+                
+                <!-- Left Column: Patient Profile & Intake Summaries -->
+                <div class="doc-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-address-card"></i> Patient Profile & Vitals</h3>
+                    </div>
+                    <div class="patient-info-grid">
+                        <p><strong>Name:</strong> Rajesh Kumar</p>
+                        <p><strong>Age/Gender:</strong> 42 Yrs / Male</p>
+                        <p><strong>ABHA ID:</strong> 91-8823-1092-22</p>
+                        <p><strong>DPDP Consent:</strong> <span class="badge-consent"><i class="fa-solid fa-check"></i> Verified</span></p>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-notes-medical"></i> AI Structured Intake Summary</h3>
+                    </div>
+
+                    <div class="summary-section">
+                        <h4><i class="fa-solid fa-heart-pulse"></i> SOCRATES (Allopathic Analysis)</h4>
+                        <ul>
+                            <li><strong>Site:</strong> Substernal chest region radiating to left shoulder.</li>
+                            <li><strong>Onset:</strong> Sudden onset, started 2 hours ago.</li>
+                            <li><strong>Character:</strong> Heavy squeezing/pressure sensation.</li>
+                            <li><strong>Severity:</strong> 8/10 on pain scale.</li>
+                        </ul>
+                    </div>
+
+                    <div class="summary-section ayush-bg">
+                        <h4><i class="fa-solid fa-leaf"></i> Dashavidha (AYUSH Analysis)</h4>
+                        <ul>
+                            <li><strong>Prakriti:</strong> Pitta-Vata dominant.</li>
+                            <li><strong>Agni:</strong> Mandagni (Sluggish digestion reported).</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Column: OCR Results & Doctor Verification Actions -->
+                <div class="doc-card">
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-file-invoice"></i> Digitized OCR & Previous Records</h3>
+                    </div>
+                    
+                    <div class="ocr-summary-box">
+                        <p><i class="fa-solid fa-file-medical-snip"></i> <strong>Attached Previous Reports:</strong></p>
+                        <p>• CBC_Blood_Report_Oct2025.pdf (Verified)</p>
+                        <p>• Scanned Rx: Hypertension - Amlodipine 5mg OD.</p>
+                        <span class="ocr-tag">OCR Confidence Score: 94%</span>
+                    </div>
+
+                    <hr class="divider">
+
+                    <div class="card-header">
+                        <h3><i class="fa-solid fa-stethoscope"></i> Doctor Verification & ABDM Push</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Clinical Notes / Final Diagnosis</label>
+                        <textarea rows="4" placeholder="Enter clinical assessment, prescribed medicines, or lab tests..."></textarea>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-primary" onclick="pushToABDM()">
+                            <i class="fa-solid fa-network-wired"></i> Verify & Push to ABDM / HIS
+                        </button>
+                        <button class="btn-sec" onclick="logoutDoctor()">
+                            <i class="fa-solid fa-right-from-bracket"></i> Lock Dashboard
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <!-- ==================== MODAL POPUPS ==================== -->
+
+    <!-- 1. QR CODE CAMERA SCANNER MODAL -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-qrcode"></i> Scan ABHA QR Code</h3>
+                <span class="close-btn" onclick="closeQRScanner()">&times;</span>
+            </div>
+            <div id="reader"></div>
+            <p style="text-align:center; margin-top:10px; font-size:0.85rem; color:#666;">
+                Point your camera at the QR code
+            </p>
+        </div>
+    </div>
+
+    <!-- 2. DOCTOR ACCESS PIN AUTH MODAL -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-user-shield"></i> Doctor Authentication</h3>
+                <span class="close-btn" onclick="closeAuthModal()">&times;</span>
+            </div>
+            <p style="font-size:0.9rem; color:#555; margin-bottom:12px;">This area is restricted for Medical Practitioners only.</p>
+            <div class="form-group">
+                <label>Enter Doctor Access PIN (Default PIN: 1234)</label>
+                <input type="password" id="doctorPin" placeholder="Enter PIN">
+            </div>
+            <button class="btn-primary" style="width:100%" onclick="verifyDoctorPin()">Login to Dashboard</button>
+        </div>
+    </div>
+
+    <!-- 3. DOCTOR PROFILE DETAILS MODAL -->
+    <div id="docProfileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="docProfileName"><i class="fa-solid fa-user-doctor"></i> Doctor Profile</h3>
+                <span class="close-btn" onclick="closeDocProfileModal()">&times;</span>
+            </div>
+            <div class="profile-modal-body">
+                <img id="docProfileImg" src="" alt="Doctor Profile Image" class="modal-doc-img">
+                <div class="doc-details-text">
+                    <p><strong>Department:</strong> <span id="docDept"></span></p>
+                    <p><strong>Qualification:</strong> <span id="docQual"></span></p>
+                    <p><strong>Experience:</strong> <span id="docExp"></span></p>
+                    <p><strong>OPD Schedule:</strong> <span id="docSchedule"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
